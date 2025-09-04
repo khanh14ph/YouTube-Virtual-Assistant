@@ -1,0 +1,60 @@
+# Docker Compose for Local LLM Services
+# Provides multiple LLM backend options for YouTube Virtual Assistant
+
+version: '3.8'
+
+services:
+  # Text Generation WebUI (Advanced option with web interface)
+  text-generation-webui:
+    image: ghcr.io/oobabooga/text-generation-webui:latest
+    container_name: youtube-assistant-llm
+    ports:
+      - "7860:7860"  # Web interface
+      - "5000:5000"  # API endpoint
+    volumes:
+      - ./models:/app/models
+      - ./extensions:/app/extensions
+      - ./loras:/app/loras
+    environment:
+      - CLI_ARGS=--api --listen --listen-host 0.0.0.0 --listen-port 5000
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles: ["webui"]
+
+  # Alternative: Simple OpenAI-compatible API server
+  llama-cpp-python:
+    image: ghcr.io/abetlen/llama-cpp-python:latest
+    container_name: youtube-assistant-simple-llm
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./models:/models
+    environment:
+      - MODEL=/models/your-model.gguf
+    command: ["python", "-m", "llama_cpp.server", "--model", "/models/your-model.gguf", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
+    profiles: ["simple"]
+
+  # Ollama (if you prefer Docker over native install)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: youtube-assistant-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama-data:/root/.ollama
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles: ["ollama"]

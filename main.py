@@ -1,32 +1,44 @@
-from vad import vad
-from asr import asr
-from download import download
-from multiprocessing import get_context
-import numpy as np
+#!/usr/bin/env python3
+"""
+Legacy main.py - Redirects to new modular architecture
 
-speech_segments = []
-import time
-from gpt import gpt
+This file maintains backward compatibility while directing users to the new structure.
+For the full-featured application, use: python -m src.main
+"""
 
+import sys
+import os
 
-# with get_context("fork").Pool(processes=4) as pool:
-#     result = test_dataset1.map(
-#         map_to_pred, batched=True, batch_size=4, fn_kwargs={"pool": pool}
-#     )
-def main(youtube_url):
-    # download_audio(youtube_url)
-    speech, time_stamps = vad("audio.wav")
-    for i in time_stamps:
-        duration = i["end"] / 16000 - i["start"] / 16000
-        speech_segments.append((np.array(speech[i["start"] : i["end"]]), duration))
-    transcript_lst = asr(speech_segments)
-    all_transcript = ". ".join(transcript_lst)
-    # conversation_history=[]
-    # while True:
-    #     prompt=input("Input: ")
-    #     response, conversation_history=gpt(prompt,all_transcript,conversation_history)
-    #     print("GPT: ", response)
-    return all_transcript
+# Add src to Python path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
+from src.main import main as new_main
 
-# main(youtube_url="https://www.youtube.com/watch?v=4QVaSE9v7RE&t=3s")
+def main(youtube_url=None):
+    """
+    Legacy function - redirects to new architecture
+    
+    For the new modular system, use:
+        python -m src.main gui    # For GUI
+        python -m src.main cli <url>  # For CLI
+    """
+    print("⚠️  Using legacy main.py")
+    print("💡 For the full-featured application, use:")
+    print("   python -m src.main gui    # For GUI interface")
+    print("   python -m src.main cli <youtube_url>  # For CLI interface")
+    
+    if youtube_url:
+        print(f"\n🔄 Redirecting to new CLI with URL: {youtube_url}")
+        sys.argv = ["src.main", "cli", youtube_url]
+        new_main()
+    else:
+        print(f"\n🔄 Starting GUI interface...")
+        sys.argv = ["src.main", "gui"]
+        new_main()
+
+if __name__ == "__main__":
+    # Handle command line arguments
+    if len(sys.argv) > 1:
+        main(sys.argv[1])
+    else:
+        main()
