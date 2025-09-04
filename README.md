@@ -17,7 +17,7 @@ An AI-powered assistant that processes YouTube videos to extract transcripts and
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/YouTube-Virtual-Assistant.git
+git clone https://github.com/khanh14ph/YouTube-Virtual-Assistant.git
 cd YouTube-Virtual-Assistant
 
 # Install dependencies
